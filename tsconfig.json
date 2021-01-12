@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    /* Visit https://aka.ms/tsconfig.json to read more about this file */
+    "target": "es2017",                       
+    "module": "commonjs",                     
+    "lib": ["es5", "es6"],                        
+    "allowJs": true,                       
+    "outDir": "./build",                    
+    "rootDir": "./src",                         
+    "removeComments": true,               
+    "strict": false,          
+    "noImplicitAny": false,              
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/@types"
+    ],                      
+    "esModuleInterop": true,    
+    "resolveJsonModule": true,               
+    "sourceMap": true,
+    "skipLibCheck": true,                     
+    "forceConsistentCasingInFileNames": true, 
+    "baseUrl": ".",
+    "paths": {
+      "@scripts/*": ["./src/scripts/*"]
+    },
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+  }
+}
