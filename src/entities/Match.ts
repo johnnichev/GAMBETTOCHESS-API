@@ -10,7 +10,7 @@ export class Match extends BaseEntity {
     @Generated('uuid')
     secret_key: string;
 
-    @Column()
+    @Column({default: 'whitePlay'})
     status: string;
 
     @OneToMany(() => Piece, piece => piece.match)
