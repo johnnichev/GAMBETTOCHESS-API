@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { validateGetMatch } from '../validations/matchesValidations';
+import { validateMatchOrMoves } from '../validations/validations';
 
 export const getMatchMiddleware = async (request: Request, response: Response, next: NextFunction): Promise<Response | void> => {
 	const playerColor = request.header('Player-Color');
@@ -7,9 +7,9 @@ export const getMatchMiddleware = async (request: Request, response: Response, n
 	const matchId = request.params.id;
 
 	if(!playerColor || !secretKey) return response.status(422).send({error: 'Send a player color and a secret key'});
-	if(!matchId) return response.status(422).send({error: 'Send an id'});
+	if(!matchId) return response.status(422).send({error: 'Send a valid id'});
 
-	const failValidation = validateGetMatch(playerColor, secretKey, matchId);
+	const failValidation = validateMatchOrMoves(playerColor, secretKey, matchId);
 	
 	if(failValidation) return response.status(400).send({error: 'Please, check the data you are sending'});
 

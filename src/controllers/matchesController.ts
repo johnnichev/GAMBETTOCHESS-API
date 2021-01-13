@@ -7,7 +7,6 @@ import { Piece } from '../entities/Piece';
 const matchesRepository = getConnection().getRepository(Match); 
 
 export const getMatch = async (request: Request, response: Response) : Promise<Response> => {
-	const playerColor = request.header('Player-Color');
 	const secretKey = request.header('Secret-Key');
 	const matchId = request.params.id;
 
