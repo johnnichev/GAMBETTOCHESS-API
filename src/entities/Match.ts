@@ -7,6 +7,7 @@ export class Match extends BaseEntity {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
+    @Column()
     @Generated('uuid')
     secret_key: string;
 

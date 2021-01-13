@@ -2,6 +2,7 @@
 import 'reflect-metadata';
 import 'dotenv/config';
 import {createConnection} from 'typeorm';
+import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 
 const database = process.env.DATABASE_URL;
 
@@ -10,6 +11,7 @@ createConnection({
 	'url': database,
 	'synchronize': true,
 	'logging': false,
+	'namingStrategy': new SnakeNamingStrategy,
 	'entities': [
 		'src/entities/**/*.ts',
 	],

@@ -1,20 +1,37 @@
 import { Request, Response } from 'express';
+import { getConnection } from 'typeorm';
 import { Match } from '../entities/Match';
 import { Piece } from '../entities/Piece';
 
+
+const matchesRepository = getConnection().getRepository(Match); 
+
 export const getMatch = async (request: Request, response: Response) : Promise<Response> => {
-	return response.status(200).send('ok!');
+	const playerColor = request.header('Player-Color');
+	const secretKey = request.header('Secret-Key');
+	const matchId = request.params.id;
+
+
+	const findMatch = await matchesRepository.findOne({where: {id: matchId}, relations: ['pieces']});
+
+	if(!findMatch) return response.status(404).send({error: 'match not found'});
+
+	if(secretKey !== findMatch.secret_key) return response.status(422).send({error: 'invalid credentials'});
+
+
+	return response.status(200).send(findMatch);
 };
 
 export const postMatch = async (request: Request, response: Response) : Promise<Response> => {
 	
 	const match = new Match;
 	const pieces: Piece[] = await createBasePiecesArray();
-	match.pieces = pieces; 
-	
-	const saveMatch = await match.save();
-	
-	return response.status(200).send(saveMatch);
+	match.pieces = pieces;
+	await match.save();
+
+	const findMatch = await matchesRepository.findOne({where: {id: match.id}, relations: ['pieces']});
+
+	return response.status(200).send(findMatch);
 };
 
 const createBasePiecesArray = async(): Promise<Piece[]> => {
