@@ -8,9 +8,9 @@ interface IPosition {
 	col: number,
 }
 
-interface ICollision {
+interface IPositionData {
+	position: IPosition,
 	hit: boolean,
-	isEnemy?: boolean,
 }
 
 const piecesRepository = getConnection().getRepository(Piece); 
@@ -20,6 +20,7 @@ export const getMoves = async (request: Request, response: Response) : Promise<R
 	const playerColor = request.header('Player-Color');
 	const secretKey = request.header('Secret-Key');
 	const pieceId = request.params.id;
+	let moves: IPosition[];
 
 
 	const findPiece = await piecesRepository.findOne({where: {id: pieceId}, relations: ['match']});
@@ -40,8 +41,20 @@ export const getMoves = async (request: Request, response: Response) : Promise<R
 	const match = await matchesRepository.findOne({where: {id: findPiece.match.id}, relations: ['pieces']});
 	const pieces = match.pieces;
 	
-	// const moves = checkMovesXandY(playerColor, initialPosition, pieces);
-	const moves = checkMovesDiagonals(playerColor, initialPosition, pieces);
+	if(findPiece.type === 'pawn'){
+		moves = checkMovesPawn(playerColor, initialPosition, pieces);
+	} else if(findPiece.type === 'rook'){
+		moves = checkMovesXandY(playerColor, initialPosition, pieces);
+	} else if(findPiece.type === 'bishop'){
+		moves = checkMovesDiagonals(playerColor, initialPosition, pieces);
+	} else if(findPiece.type === 'queen'){
+		moves = checkMovesQueen(playerColor, initialPosition, pieces);
+	} else if(findPiece.type === 'knight'){
+		moves = checkMovesKnight(playerColor, initialPosition, pieces);
+	} else if(findPiece.type === 'king'){
+		moves = checkMovesKing(playerColor, initialPosition, pieces);
+	}
+
 	return response.status(200).send(moves);
 };
 
@@ -51,25 +64,26 @@ export const postMove = async (request: Request, response: Response) : Promise<R
 
 const checkMovesDiagonals = (color: string, initialPosition: IPosition, pieces: Piece[]): IPosition[] => {
 	const positions = [];
-	let collision: ICollision;
 	let col = 0;
 	let row = 0;
+	let checkedPosition: IPositionData | null;
 
 	col = initialPosition.col;
-	for(row = initialPosition.row; row >= 0; row--){
+	for(row = initialPosition.row; row > 0; row--){
 		if(col <= 0) break;
 		col--;
 		if(row !== initialPosition.row){
-			collision = checkCollision(color, {row, col}, pieces);
 			
-			if(collision.hit){
-				if(collision.isEnemy){
-					positions.push({row, col});
+			checkedPosition = checkCollision(color, {row, col}, pieces);
+			
+			if(checkedPosition){
+				if(checkedPosition.hit){
+					positions.push(checkedPosition.position);
 					break;
+				}else{
+					positions.push(checkedPosition.position);
 				}
-				break;
-			} else{
-				positions.push({row, col});
+			}else{
 				break;
 			}
 		}
@@ -80,16 +94,17 @@ const checkMovesDiagonals = (color: string, initialPosition: IPosition, pieces: 
 		if(col > 7) break;
 		col++;
 		if(row !== initialPosition.row){
-			collision = checkCollision(color, {row, col}, pieces);
 			
-			if(collision.hit){
-				if(collision.isEnemy){
-					positions.push({row, col});
+			checkedPosition = checkCollision(color, {row, col}, pieces);
+			
+			if(checkedPosition){
+				if(checkedPosition.hit){
+					positions.push(checkedPosition.position);
 					break;
+				}else{
+					positions.push(checkedPosition.position);
 				}
-				break;
-			} else{
-				positions.push({row, col});
+			}else{
 				break;
 			}
 		}
@@ -100,36 +115,38 @@ const checkMovesDiagonals = (color: string, initialPosition: IPosition, pieces: 
 		if(col <= 0) break;
 		col--;
 		if(row !== initialPosition.row){
-			collision = checkCollision(color, {row, col}, pieces);
 			
-			if(collision.hit){
-				if(collision.isEnemy){
-					positions.push({row, col});
+			checkedPosition = checkCollision(color, {row, col}, pieces);
+			
+			if(checkedPosition){
+				if(checkedPosition.hit){
+					positions.push(checkedPosition.position);
 					break;
+				}else{
+					positions.push(checkedPosition.position);
 				}
-				break;
-			} else{
-				positions.push({row, col});
+			}else{
 				break;
 			}
 		}
 	}
 
 	col = initialPosition.col;
-	for(row = initialPosition.row; row >= 0; row--){
+	for(row = initialPosition.row; row > 0; row--){
 		if(col > 7) break;
 		col++;
 		if(row !== initialPosition.row){
-			collision = checkCollision(color, {row, col}, pieces);
 			
-			if(collision.hit){
-				if(collision.isEnemy){
-					positions.push({row, col});
+			checkedPosition = checkCollision(color, {row, col}, pieces);
+			
+			if(checkedPosition){
+				if(checkedPosition.hit){
+					positions.push(checkedPosition.position);
 					break;
+				}else{
+					positions.push(checkedPosition.position);
 				}
-				break;
-			} else{
-				positions.push({row, col});
+			}else{
 				break;
 			}
 		}
@@ -139,44 +156,81 @@ const checkMovesDiagonals = (color: string, initialPosition: IPosition, pieces: 
 
 const checkMovesXandY = (color: string, initialPosition: IPosition, pieces: Piece[]): IPosition[] => {
 	const positions = [];
-	let collision: ICollision;
 	let col = 0;
 	let row = 0;
+	let checkedPosition: IPositionData | null;
 
 	col = initialPosition.col;
-	for(row = 0; row < 8; row++){
+	for(row = initialPosition.row; row < 8; row++){
 		if(row !== initialPosition.row){
 			
-			collision = checkCollision(color, {row, col}, pieces);
+			checkedPosition = checkCollision(color, {row, col}, pieces);
 			
-			if(collision.hit){
-				if(collision.isEnemy){
-					positions.push({row, col});
+			if(checkedPosition){
+				if(checkedPosition.hit){
+					positions.push(checkedPosition.position);
 					break;
+				}else{
+					positions.push(checkedPosition.position);
 				}
+			}else{
 				break;
-			} else{
-				positions.push({row, col});
+			}
+		}
+	}
+
+	col = initialPosition.col;
+	for(row = initialPosition.row; row > 0; row--){
+		if(row !== initialPosition.row){
+			
+			checkedPosition = checkCollision(color, {row, col}, pieces);
+			
+			if(checkedPosition){
+				if(checkedPosition.hit){
+					positions.push(checkedPosition.position);
+					break;
+				}else{
+					positions.push(checkedPosition.position);
+				}
+			}else{
 				break;
 			}
 		}
 	}
 
 	row = initialPosition.row;
-	for(col = 0; col < 8; col++){
+	for(col = initialPosition.col; col < 8; col++){
 		if(col !== initialPosition.col){
 			
-			collision = checkCollision(color, {row, col}, pieces);
+			checkedPosition = checkCollision(color, {row, col}, pieces);
 			
-			if(collision.hit){
-				
-				if(collision.isEnemy){
-					positions.push({row, col});
+			if(checkedPosition){
+				if(checkedPosition.hit){
+					positions.push(checkedPosition.position);
 					break;
+				}else{
+					positions.push(checkedPosition.position);
 				}
+			}else{
 				break;
-			} else{
-				positions.push({row, col});
+			}
+		}
+	}
+
+	row = initialPosition.row;
+	for(col = initialPosition.col; col > 0; col--){
+		if(col !== initialPosition.col){
+			
+			checkedPosition = checkCollision(color, {row, col}, pieces);
+			
+			if(checkedPosition){
+				if(checkedPosition.hit){
+					positions.push(checkedPosition.position);
+					break;
+				}else{
+					positions.push(checkedPosition.position);
+				}
+			}else{
 				break;
 			}
 		}
@@ -185,52 +239,215 @@ const checkMovesXandY = (color: string, initialPosition: IPosition, pieces: Piec
 	return positions;
 };
 
-const checkMovesQueen = () => {
+const checkMovesQueen = (color: string, initialPosition: IPosition, pieces: Piece[]): IPosition[] => {
 	let moves: IPosition[] = [];
 	
-	const diagonals = checkMovesDiagonals();
-	const movesXandY = checkMovesXandY();
+	const diagonals = checkMovesDiagonals(color, initialPosition, pieces);
+	const movesXandY = checkMovesXandY(color, initialPosition, pieces);
 
 	moves = moves.concat(diagonals, movesXandY);
-	// CRIACAO QUEEN
+
+	return moves;
 };
 
-const checkCollision = (color: string, position: IPosition, pieces: Piece[]): ICollision => {
+const checkMovesKnight = (color: string, initialPosition: IPosition, pieces: Piece[]): IPosition[] => {
+	const positions = [];
+	const col = initialPosition.col;
+	const row = initialPosition.row;
+	let checkedPosition: IPositionData | null;
+
+	checkedPosition = checkCollision(color, {col: col+2, row: row+1}, pieces);
+	if((checkedPosition && checkedPosition.position.col < 8) && checkedPosition.position.row < 8) positions.push(checkedPosition.position);
+
+	checkedPosition = checkCollision(color, {col: col+2, row: row-1}, pieces);
+	if((checkedPosition && checkedPosition.position.col < 8) && checkedPosition.position.row >= 0) positions.push(checkedPosition.position);
+
+	checkedPosition = checkCollision(color, {col: col-2, row: row+1}, pieces);
+	if((checkedPosition && checkedPosition.position.col >= 0) && checkedPosition.position.row < 8) positions.push(checkedPosition.position);
+
+	checkedPosition = checkCollision(color, {col: col-2, row: row-1}, pieces);
+	if((checkedPosition && checkedPosition.position.col >= 0) && checkedPosition.position.row >= 0) positions.push(checkedPosition.position);
+
+	checkedPosition = checkCollision(color, {col: col+1, row: row+2}, pieces);
+	if((checkedPosition && checkedPosition.position.col < 8) && checkedPosition.position.row < 8) positions.push(checkedPosition.position);
+
+	checkedPosition = checkCollision(color, {col: col-1, row: row+2}, pieces);
+	if((checkedPosition && checkedPosition.position.col >= 0) && checkedPosition.position.row < 8) positions.push(checkedPosition.position);
+
+	checkedPosition = checkCollision(color, {col: col+1, row: row-2}, pieces);
+	if((checkedPosition && checkedPosition.position.col < 8) && checkedPosition.position.row >= 0) positions.push(checkedPosition.position);
+	
+	checkedPosition = checkCollision(color, {col: col-1, row: row-2}, pieces);
+	if((checkedPosition && checkedPosition.position.col >= 0) && checkedPosition.position.row >= 0) positions.push(checkedPosition.position);
+
+	return positions;
+};
+
+const checkMovesKing = (color: string, initialPosition: IPosition, pieces: Piece[]): IPosition[] => {
+	const positions = [];
+	const col = initialPosition.col;
+	const row = initialPosition.row;
+	let checkedPosition: IPositionData | null;
+
+	checkedPosition = checkCollision(color, {col: col, row: row+1}, pieces);
+	if(checkedPosition && checkedPosition.position.row < 8) positions.push(checkedPosition.position);
+
+	checkedPosition = checkCollision(color, {col: col-1, row: row+1}, pieces);
+	if((checkedPosition && checkedPosition.position.col >= 0) && checkedPosition.position.row < 8) positions.push(checkedPosition.position);
+
+	checkedPosition = checkCollision(color, {col: col+1, row: row+1}, pieces);
+	if((checkedPosition && checkedPosition.position.col < 8) && checkedPosition.position.row < 8) positions.push(checkedPosition.position);
+
+
+	checkedPosition = checkCollision(color, {col: col, row: row-1}, pieces);
+	if(checkedPosition && checkedPosition.position.row >= 0) positions.push(checkedPosition.position);
+
+	checkedPosition = checkCollision(color, {col: col-1, row: row-1}, pieces);
+	if((checkedPosition && checkedPosition.position.col >= 0) && checkedPosition.position.row >= 0) positions.push(checkedPosition.position);
+
+	checkedPosition = checkCollision(color, {col: col+1, row: row-1}, pieces);
+	if((checkedPosition && checkedPosition.position.col < 8) && checkedPosition.position.row >= 0) positions.push(checkedPosition.position);
+
+
+	checkedPosition = checkCollision(color, {col: col+1, row: row}, pieces);
+	if(checkedPosition && checkedPosition.position.col < 8) positions.push(checkedPosition.position);
+
+	checkedPosition = checkCollision(color, {col: col-1, row: row}, pieces);
+	if(checkedPosition && checkedPosition.position.col >= 0) positions.push(checkedPosition.position);
+
+	return positions;
+};
+
+const checkMovesPawn = (color: string, initialPosition: IPosition, pieces: Piece[]): IPosition[] => {
+	const positions = [];
+	const col = initialPosition.col;
+	const row = initialPosition.row;
+	let checkedPosition: IPositionData | null;
+
+	if(color === 'white'){
+		checkedPosition = checkCollision(color, {col: col, row: row+1}, pieces);
+		if(checkedPosition && checkedPosition.position.row < 8) positions.push(checkedPosition.position);
+
+		checkedPosition = checkCollision(color, {col: col+1, row: row+1}, pieces);
+		if(((checkedPosition && checkedPosition.position.col < 8) && checkedPosition.position.row < 8) && checkedPosition.hit) positions.push(checkedPosition.position);
+
+		checkedPosition = checkCollision(color, {col: col-1, row: row+1}, pieces);
+		if(((checkedPosition && checkedPosition.position.col >= 0) && checkedPosition.position.row < 8) && checkedPosition.hit) positions.push(checkedPosition.position);
+	} else{
+		checkedPosition = checkCollision(color, {col: col, row: row-1}, pieces);
+		if(checkedPosition && checkedPosition.position.row >= 0) positions.push(checkedPosition.position);
+
+		checkedPosition = checkCollision(color, {col: col+1, row: row-1}, pieces);
+		if(((checkedPosition && checkedPosition.position.col < 8) && checkedPosition.position.row >= 0) && checkedPosition.hit) positions.push(checkedPosition.position);
+
+		checkedPosition = checkCollision(color, {col: col-1, row: row-1}, pieces);
+		if(((checkedPosition && checkedPosition.position.col >= 0) && checkedPosition.position.row >= 0) && checkedPosition.hit) positions.push(checkedPosition.position);
+	}
+
+	return positions;
+};
+
+const checkCollision = (color: string, position: IPosition, pieces: Piece[]): IPositionData | null=> {
 	const collision = {
 		hit: false,
 		isEnemy: false,
 	};
+
+	const positionData = {
+		position,
+		hit: false,
+	};
 	
-	pieces.forEach(element => {
+	pieces.some(element => {
 		if(element.row === position.row && element.col === position.col){
-			
 			collision.hit = true;
 			if(color !== element.color){
 				collision.isEnemy = true;
+				return true;
 			}
+			return true;
 		}
 	});
-	
-	return collision;
+
+	if(collision.hit){
+		positionData.hit = true;
+		if(collision.isEnemy){
+			return positionData;
+		}else{
+			return null;
+		}
+	}else{
+		return positionData;
+	}
+
 };
 
 // rook: vai somando e subtraindo na vertical para y e na horizontal para x
-// CHECK MOVES X AND Y
- 
+// CHECK MOVES X AND Y 
+//OK
+
 // bishop: soma row e coluna ou subtrai escolhendo o sentido da diagonal
-// CHECK MOVES DIAGONALS
+// CHECK MOVES DIAGONALS 
+//OK
 
 // queen: soma de bishop e rook
 // CHECK MOVES X AND Y AND DIAGONALS
+//OK
 
-// knight: apenas 8 posicoes possiveis, soma 2 em x ou em y e logo em seguida subtrai em x ou em y (contrario da primeira direcao)
+// knight: apenas 8 posicoes possiveis, SOMA ou SUBTRAI 2 em X OU em Y e em seguida SOMA ou SUBTRAI 1 em X ou em Y (contrario da primeira direcao)
 // CHECK MOVES KNIGHT
+//OK
 
 // king: apenas espaços vizinhos
 // CHECK MOVES KING
+//OK
 
 // pawn: soma 1 em y caso seja branca e subtrai caso seja preta, checa as diagonais proximas na direcao positiva do movimento checando se pode comer as pecas, branco e esteja na row 1 = pode andar 2 casas somando na vertical, preta e row 6 pode andar 2 casas subtraindo na vertical. 
 // CHECK MOVES 
 
 
 
+
+// const checkStraightLine = (color: string, pieces: Piece[], pieceCol: number, pieceRow: number, direction: string): IPosition[] => {
+// 	const positions = [];
+// 	let collision: ICollision;
+// 	const col = 0;
+// 	const row = 0;
+// 	let baseDirection = 0;
+// 	let line = 0;
+// 	let positionNow = {row, col};
+
+// 	if(direction === 'vertical'){
+// 		baseDirection = pieceCol;
+// 	}else{
+// 		baseDirection = pieceRow;
+// 	}
+	
+// 	for(line = baseDirection; line < 8; line++){
+// 		if(direction === 'vertical'){
+// 			positionNow = {row: line, col: pieceCol};
+// 		} else{
+// 			positionNow = {row: pieceRow, col: line};
+// 		}
+
+// 		if(line !== baseDirection){
+			
+// 			collision = checkCollision(color, positionNow, pieces);
+			
+// 			if(collision.hit){
+// 				if(collision.isEnemy){
+// 					positions.push(positionNow);
+// 					break;
+// 				}
+// 				break;
+// 			} else{
+// 				positions.push(positionNow);
+// 				break;
+// 			}
+// 		}
+// 	}
+	
+// 	//faço um foreach que só faz algo quando o index for igual a posicao que eu quero
+
+// 	return positions;
+// };
