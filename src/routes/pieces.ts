@@ -1,11 +1,11 @@
 import { Router } from 'express';
 
-import { getMovesMiddleware, postMoveMiddleware } from '../middlewares/piecesMiddlewares';
+import { movesMiddleware, movementFormatMiddleware } from '../middlewares/piecesMiddlewares';
 import { getMoves, postMove } from '../controllers/piecesController';
 
 const pieces = Router();
 
-pieces.get('/:id/moves', getMovesMiddleware, getMoves);
-pieces.post('/:id/moves', postMoveMiddleware, postMove);
+pieces.get('/:id/moves', movesMiddleware, getMoves);
+pieces.post('/:id/moves', movesMiddleware, movementFormatMiddleware, postMove);
 
 export default pieces;

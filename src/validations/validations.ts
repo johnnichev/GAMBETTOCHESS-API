@@ -22,3 +22,23 @@ export const validateMatchOrMoves = (
 	
 	return !!validation.error;
 };
+
+export const validateMovementFormat = (
+	row: number,
+	col: number,
+) : boolean => {
+
+	const movement = joi.object({
+		row: joi.number().integer().min(0).max(7),
+		col: joi.number().integer().min(0).max(7),
+	});
+
+	const data = {
+		row,
+		col,
+	};
+
+	const validation = movement.validate(data);
+	
+	return !!validation.error;
+};

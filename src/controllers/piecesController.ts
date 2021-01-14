@@ -20,13 +20,12 @@ export const getMoves = async (request: Request, response: Response) : Promise<R
 	const playerColor = request.header('Player-Color');
 	const secretKey = request.header('Secret-Key');
 	const pieceId = request.params.id;
-	let moves: IPosition[];
 
 
 	const findPiece = await piecesRepository.findOne({where: {id: pieceId}, relations: ['match']});
 	if(!findPiece) return response.status(404).send({error: 'piece not found'});
 
-	if(secretKey !== findPiece.match.secret_key) return response.status(422).send({error: 'invalid credentials'});
+	if(secretKey !== findPiece.match.secret_key) return response.status(401).send({error: 'invalid credentials'});
 
 	const playerTurn = findPiece.match.status == 'whitePlay'? 'white' : 'black';
 	if(playerColor !== playerTurn) return response.status(403).send({error: 'not your turn'});
@@ -40,26 +39,99 @@ export const getMoves = async (request: Request, response: Response) : Promise<R
 
 	const match = await matchesRepository.findOne({where: {id: findPiece.match.id}, relations: ['pieces']});
 	const pieces = match.pieces;
-	
-	if(findPiece.type === 'pawn'){
-		moves = checkMovesPawn(playerColor, initialPosition, pieces);
-	} else if(findPiece.type === 'rook'){
-		moves = checkMovesXandY(playerColor, initialPosition, pieces);
-	} else if(findPiece.type === 'bishop'){
-		moves = checkMovesDiagonals(playerColor, initialPosition, pieces);
-	} else if(findPiece.type === 'queen'){
-		moves = checkMovesQueen(playerColor, initialPosition, pieces);
-	} else if(findPiece.type === 'knight'){
-		moves = checkMovesKnight(playerColor, initialPosition, pieces);
-	} else if(findPiece.type === 'king'){
-		moves = checkMovesKing(playerColor, initialPosition, pieces);
-	}
+
+	const moves = checkMoves(findPiece.type, playerColor, initialPosition, pieces);
 
 	return response.status(200).send(moves);
 };
 
+
+
 export const postMove = async (request: Request, response: Response) : Promise<Response> => {
-	return response.status(200).send('ok!');
+	const playerColor = request.header('Player-Color');
+	const secretKey = request.header('Secret-Key');
+	const pieceId = request.params.id;
+	const { row, col } = request.body;
+
+
+	const findPiece = await piecesRepository.findOne({where: {id: pieceId}, relations: ['match']});
+	if(!findPiece) return response.status(404).send({error: 'piece not found'});
+
+	if(secretKey !== findPiece.match.secret_key) return response.status(401).send({error: 'invalid credentials'});
+
+	const playerTurn = findPiece.match.status == 'whitePlay'? 'white' : 'black';
+	if(playerColor !== playerTurn) return response.status(403).send({error: 'not your turn'});
+
+	if(playerColor !== findPiece.color) return response.status(403).send({error: 'not your piece'});
+
+
+	const match = await matchesRepository.findOne({where: {id: findPiece.match.id}, relations: ['pieces']});
+	const pieces = match.pieces;
+
+	const initialPosition = {
+		row: findPiece.row,
+		col: findPiece.col,
+	};
+
+
+	const move = {col, row};
+	
+	const possibleMoves = checkMoves(findPiece.type, playerColor, initialPosition, pieces);
+	
+	const isMovePossible = possibleMoves.some((element) => element.col == move.col && element.row == move.row);
+	
+	if(!isMovePossible) return response.status(403).send({error: 'not a valid move'});
+
+	const isEnemyInPosition = pieces.find((element) => element.col == move.col && element.row == move.row);
+	if(isEnemyInPosition){
+		await piecesRepository.createQueryBuilder()
+			.delete()
+			.from(Piece)
+			.where('id = :id', { id: isEnemyInPosition.id })
+			.execute();
+	}
+
+	const updatePiecePosition = await piecesRepository.createQueryBuilder()
+		.update(Piece)
+		.set({ col: col, row: row })
+		.where('id = :id', { id: pieceId })
+		.execute();
+	
+	if(updatePiecePosition){
+		let newStatus: string;
+		if(playerColor === 'white'){
+			newStatus = 'blackPlay';
+		} else{
+			newStatus = 'whitePlay';
+		}
+		
+		await matchesRepository.createQueryBuilder()
+			.update(Match)
+			.set({ status: newStatus})
+			.where('id = :id', { id: findPiece.match_id })
+			.execute();
+		const updatedMatch = await matchesRepository.findOne({where: {id: findPiece.match.id}, relations: ['pieces']});
+	
+		return response.status(201).send(updatedMatch);
+	}
+
+	return response.status(500).send({error: 'please send this to a developer'});
+};
+
+const checkMoves = (pieceType: string, playerColor: string, piecePosition: IPosition, pieces: Piece[]): IPosition[] => {
+	if(pieceType === 'pawn'){
+		return checkMovesPawn(playerColor, piecePosition, pieces);
+	} else if(pieceType === 'rook'){
+		return checkMovesXandY(playerColor, piecePosition, pieces);
+	} else if(pieceType === 'bishop'){
+		return checkMovesDiagonals(playerColor, piecePosition, pieces);
+	} else if(pieceType === 'queen'){
+		return checkMovesQueen(playerColor, piecePosition, pieces);
+	} else if(pieceType === 'knight'){
+		return checkMovesKnight(playerColor, piecePosition, pieces);
+	} else if(pieceType === 'king'){
+		return checkMovesKing(playerColor, piecePosition, pieces);
+	}
 };
 
 const checkMovesDiagonals = (color: string, initialPosition: IPosition, pieces: Piece[]): IPosition[] => {

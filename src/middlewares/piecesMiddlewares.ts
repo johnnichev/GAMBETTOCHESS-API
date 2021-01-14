@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import { validateMatchOrMoves } from '../validations/validations';
+import { validateMatchOrMoves, validateMovementFormat } from '../validations/validations';
 
 
-export const getMovesMiddleware = async (request: Request, response: Response, next: NextFunction): Promise<Response | void> => {
+export const movesMiddleware = async (request: Request, response: Response, next: NextFunction): Promise<Response | void> => {
 	const playerColor = request.header('Player-Color');
 	const secretKey = request.header('Secret-Key');
 	const id = request.params.id;
@@ -16,6 +16,13 @@ export const getMovesMiddleware = async (request: Request, response: Response, n
 
 	next();
 };
-export const postMoveMiddleware = async (request: Request, response: Response, next: NextFunction): Promise<Response | void> => {
+
+export const movementFormatMiddleware = async (request: Request, response: Response, next: NextFunction): Promise<Response | void> => {
+	const { row, col } = request.body;
+
+	const failValidation = validateMovementFormat(row, col);
+	
+	if(failValidation) return response.status(422).send({error: 'Please, rows and cols accordingly'});
+
 	next();
 };
