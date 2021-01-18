@@ -111,21 +111,21 @@ export default new class PiecesController {
 	
 	checkMoves = (pieceType: string, playerColor: string, piecePosition: IPosition, pieces: Piece[]): IPosition[] => {
 		if(pieceType === 'pawn'){
-			return this.checkMovesPawn(playerColor, piecePosition, pieces);
+			return this._checkMovesPawn(playerColor, piecePosition, pieces);
 		} else if(pieceType === 'rook'){
-			return this.checkMovesXandY(playerColor, piecePosition, pieces);
+			return this._checkMovesXandY(playerColor, piecePosition, pieces);
 		} else if(pieceType === 'bishop'){
-			return this.checkMovesDiagonals(playerColor, piecePosition, pieces);
+			return this._checkMovesDiagonals(playerColor, piecePosition, pieces);
 		} else if(pieceType === 'queen'){
-			return this.checkMovesQueen(playerColor, piecePosition, pieces);
+			return this._checkMovesQueen(playerColor, piecePosition, pieces);
 		} else if(pieceType === 'knight'){
-			return this.checkMovesKnight(playerColor, piecePosition, pieces);
+			return this._checkMovesKnight(playerColor, piecePosition, pieces);
 		} else if(pieceType === 'king'){
-			return this.checkMovesKing(playerColor, piecePosition, pieces);
+			return this._checkMovesKing(playerColor, piecePosition, pieces);
 		}
 	};
 	
-	checkMovesDiagonals = (color: string, initialPosition: IPosition, pieces: Piece[]): IPosition[] => {
+	_checkMovesDiagonals = (color: string, initialPosition: IPosition, pieces: Piece[]): IPosition[] => {
 		const positions = [];
 		let col = 0;
 		let row = 0;
@@ -137,7 +137,7 @@ export default new class PiecesController {
 			col--;
 			if(row !== initialPosition.row){
 				
-				checkedPosition = this.checkCollision(color, {row, col}, pieces);
+				checkedPosition = this._checkCollision(color, {row, col}, pieces);
 				
 				if(checkedPosition){
 					if(checkedPosition.hit){
@@ -158,7 +158,7 @@ export default new class PiecesController {
 			col++;
 			if(row !== initialPosition.row){
 				
-				checkedPosition = this.checkCollision(color, {row, col}, pieces);
+				checkedPosition = this._checkCollision(color, {row, col}, pieces);
 				
 				if(checkedPosition){
 					if(checkedPosition.hit){
@@ -179,7 +179,7 @@ export default new class PiecesController {
 			col--;
 			if(row !== initialPosition.row){
 				
-				checkedPosition = this.checkCollision(color, {row, col}, pieces);
+				checkedPosition = this._checkCollision(color, {row, col}, pieces);
 				
 				if(checkedPosition){
 					if(checkedPosition.hit){
@@ -200,7 +200,7 @@ export default new class PiecesController {
 			col++;
 			if(row !== initialPosition.row){
 				
-				checkedPosition = this.checkCollision(color, {row, col}, pieces);
+				checkedPosition = this._checkCollision(color, {row, col}, pieces);
 				
 				if(checkedPosition){
 					if(checkedPosition.hit){
@@ -217,7 +217,7 @@ export default new class PiecesController {
 		return positions;
 	};
 	
-	checkMovesXandY = (color: string, initialPosition: IPosition, pieces: Piece[]): IPosition[] => {
+	_checkMovesXandY = (color: string, initialPosition: IPosition, pieces: Piece[]): IPosition[] => {
 		const positions = [];
 		let col = 0;
 		let row = 0;
@@ -227,7 +227,7 @@ export default new class PiecesController {
 		for(row = initialPosition.row; row < 8; row++){
 			if(row !== initialPosition.row){
 				
-				checkedPosition = this.checkCollision(color, {row, col}, pieces);
+				checkedPosition = this._checkCollision(color, {row, col}, pieces);
 				
 				if(checkedPosition){
 					if(checkedPosition.hit){
@@ -246,7 +246,7 @@ export default new class PiecesController {
 		for(row = initialPosition.row; row > 0; row--){
 			if(row !== initialPosition.row){
 				
-				checkedPosition = this.checkCollision(color, {row, col}, pieces);
+				checkedPosition = this._checkCollision(color, {row, col}, pieces);
 				
 				if(checkedPosition){
 					if(checkedPosition.hit){
@@ -265,7 +265,7 @@ export default new class PiecesController {
 		for(col = initialPosition.col; col < 8; col++){
 			if(col !== initialPosition.col){
 				
-				checkedPosition = this.checkCollision(color, {row, col}, pieces);
+				checkedPosition = this._checkCollision(color, {row, col}, pieces);
 				
 				if(checkedPosition){
 					if(checkedPosition.hit){
@@ -284,7 +284,7 @@ export default new class PiecesController {
 		for(col = initialPosition.col; col > 0; col--){
 			if(col !== initialPosition.col){
 				
-				checkedPosition = this.checkCollision(color, {row, col}, pieces);
+				checkedPosition = this._checkCollision(color, {row, col}, pieces);
 				
 				if(checkedPosition){
 					if(checkedPosition.hit){
@@ -302,115 +302,115 @@ export default new class PiecesController {
 		return positions;
 	};
 	
-	checkMovesQueen = (color: string, initialPosition: IPosition, pieces: Piece[]): IPosition[] => {
+	_checkMovesQueen = (color: string, initialPosition: IPosition, pieces: Piece[]): IPosition[] => {
 		let moves: IPosition[] = [];
 		
-		const diagonals = this.checkMovesDiagonals(color, initialPosition, pieces);
-		const movesXandY = this.checkMovesXandY(color, initialPosition, pieces);
+		const diagonals = this._checkMovesDiagonals(color, initialPosition, pieces);
+		const movesXandY = this._checkMovesXandY(color, initialPosition, pieces);
 	
 		moves = moves.concat(diagonals, movesXandY);
 	
 		return moves;
 	};
 	
-	checkMovesKnight = (color: string, initialPosition: IPosition, pieces: Piece[]): IPosition[] => {
+	_checkMovesKnight = (color: string, initialPosition: IPosition, pieces: Piece[]): IPosition[] => {
 		const positions = [];
 		const col = initialPosition.col;
 		const row = initialPosition.row;
 		let checkedPosition: IPositionData | null;
 	
-		checkedPosition = this.checkCollision(color, {col: col+2, row: row+1}, pieces);
+		checkedPosition = this._checkCollision(color, {col: col+2, row: row+1}, pieces);
 		if((checkedPosition && checkedPosition.position.col < 8) && checkedPosition.position.row < 8) positions.push(checkedPosition.position);
 	
-		checkedPosition = this.checkCollision(color, {col: col+2, row: row-1}, pieces);
+		checkedPosition = this._checkCollision(color, {col: col+2, row: row-1}, pieces);
 		if((checkedPosition && checkedPosition.position.col < 8) && checkedPosition.position.row >= 0) positions.push(checkedPosition.position);
 	
-		checkedPosition = this.checkCollision(color, {col: col-2, row: row+1}, pieces);
+		checkedPosition = this._checkCollision(color, {col: col-2, row: row+1}, pieces);
 		if((checkedPosition && checkedPosition.position.col >= 0) && checkedPosition.position.row < 8) positions.push(checkedPosition.position);
 	
-		checkedPosition = this.checkCollision(color, {col: col-2, row: row-1}, pieces);
+		checkedPosition = this._checkCollision(color, {col: col-2, row: row-1}, pieces);
 		if((checkedPosition && checkedPosition.position.col >= 0) && checkedPosition.position.row >= 0) positions.push(checkedPosition.position);
 	
-		checkedPosition = this.checkCollision(color, {col: col+1, row: row+2}, pieces);
+		checkedPosition = this._checkCollision(color, {col: col+1, row: row+2}, pieces);
 		if((checkedPosition && checkedPosition.position.col < 8) && checkedPosition.position.row < 8) positions.push(checkedPosition.position);
 	
-		checkedPosition = this.checkCollision(color, {col: col-1, row: row+2}, pieces);
+		checkedPosition = this._checkCollision(color, {col: col-1, row: row+2}, pieces);
 		if((checkedPosition && checkedPosition.position.col >= 0) && checkedPosition.position.row < 8) positions.push(checkedPosition.position);
 	
-		checkedPosition = this.checkCollision(color, {col: col+1, row: row-2}, pieces);
+		checkedPosition = this._checkCollision(color, {col: col+1, row: row-2}, pieces);
 		if((checkedPosition && checkedPosition.position.col < 8) && checkedPosition.position.row >= 0) positions.push(checkedPosition.position);
 		
-		checkedPosition = this.checkCollision(color, {col: col-1, row: row-2}, pieces);
+		checkedPosition = this._checkCollision(color, {col: col-1, row: row-2}, pieces);
 		if((checkedPosition && checkedPosition.position.col >= 0) && checkedPosition.position.row >= 0) positions.push(checkedPosition.position);
 	
 		return positions;
 	};
 	
-	checkMovesKing = (color: string, initialPosition: IPosition, pieces: Piece[]): IPosition[] => {
+	_checkMovesKing = (color: string, initialPosition: IPosition, pieces: Piece[]): IPosition[] => {
 		const positions = [];
 		const col = initialPosition.col;
 		const row = initialPosition.row;
 		let checkedPosition: IPositionData | null;
 	
-		checkedPosition = this.checkCollision(color, {col: col, row: row+1}, pieces);
+		checkedPosition = this._checkCollision(color, {col: col, row: row+1}, pieces);
 		if(checkedPosition && checkedPosition.position.row < 8) positions.push(checkedPosition.position);
 	
-		checkedPosition = this.checkCollision(color, {col: col-1, row: row+1}, pieces);
+		checkedPosition = this._checkCollision(color, {col: col-1, row: row+1}, pieces);
 		if((checkedPosition && checkedPosition.position.col >= 0) && checkedPosition.position.row < 8) positions.push(checkedPosition.position);
 	
-		checkedPosition = this.checkCollision(color, {col: col+1, row: row+1}, pieces);
+		checkedPosition = this._checkCollision(color, {col: col+1, row: row+1}, pieces);
 		if((checkedPosition && checkedPosition.position.col < 8) && checkedPosition.position.row < 8) positions.push(checkedPosition.position);
 	
 	
-		checkedPosition = this.checkCollision(color, {col: col, row: row-1}, pieces);
+		checkedPosition = this._checkCollision(color, {col: col, row: row-1}, pieces);
 		if(checkedPosition && checkedPosition.position.row >= 0) positions.push(checkedPosition.position);
 	
-		checkedPosition = this.checkCollision(color, {col: col-1, row: row-1}, pieces);
+		checkedPosition = this._checkCollision(color, {col: col-1, row: row-1}, pieces);
 		if((checkedPosition && checkedPosition.position.col >= 0) && checkedPosition.position.row >= 0) positions.push(checkedPosition.position);
 	
-		checkedPosition = this.checkCollision(color, {col: col+1, row: row-1}, pieces);
+		checkedPosition = this._checkCollision(color, {col: col+1, row: row-1}, pieces);
 		if((checkedPosition && checkedPosition.position.col < 8) && checkedPosition.position.row >= 0) positions.push(checkedPosition.position);
 	
 	
-		checkedPosition = this.checkCollision(color, {col: col+1, row: row}, pieces);
+		checkedPosition = this._checkCollision(color, {col: col+1, row: row}, pieces);
 		if(checkedPosition && checkedPosition.position.col < 8) positions.push(checkedPosition.position);
 	
-		checkedPosition = this.checkCollision(color, {col: col-1, row: row}, pieces);
+		checkedPosition = this._checkCollision(color, {col: col-1, row: row}, pieces);
 		if(checkedPosition && checkedPosition.position.col >= 0) positions.push(checkedPosition.position);
 	
 		return positions;
 	};
 	
-	checkMovesPawn = (color: string, initialPosition: IPosition, pieces: Piece[]): IPosition[] => {
+	_checkMovesPawn = (color: string, initialPosition: IPosition, pieces: Piece[]): IPosition[] => {
 		const positions = [];
 		const col = initialPosition.col;
 		const row = initialPosition.row;
 		let checkedPosition: IPositionData | null;
 	
 		if(color === 'white'){
-			checkedPosition = this.checkCollision(color, {col: col, row: row+1}, pieces);
+			checkedPosition = this._checkCollision(color, {col: col, row: row+1}, pieces);
 			if(checkedPosition && checkedPosition.position.row < 8) positions.push(checkedPosition.position);
 	
-			checkedPosition = this.checkCollision(color, {col: col+1, row: row+1}, pieces);
+			checkedPosition = this._checkCollision(color, {col: col+1, row: row+1}, pieces);
 			if(((checkedPosition && checkedPosition.position.col < 8) && checkedPosition.position.row < 8) && checkedPosition.hit) positions.push(checkedPosition.position);
 	
-			checkedPosition = this.checkCollision(color, {col: col-1, row: row+1}, pieces);
+			checkedPosition = this._checkCollision(color, {col: col-1, row: row+1}, pieces);
 			if(((checkedPosition && checkedPosition.position.col >= 0) && checkedPosition.position.row < 8) && checkedPosition.hit) positions.push(checkedPosition.position);
 		} else{
-			checkedPosition = this.checkCollision(color, {col: col, row: row-1}, pieces);
+			checkedPosition = this._checkCollision(color, {col: col, row: row-1}, pieces);
 			if(checkedPosition && checkedPosition.position.row >= 0) positions.push(checkedPosition.position);
 	
-			checkedPosition = this.checkCollision(color, {col: col+1, row: row-1}, pieces);
+			checkedPosition = this._checkCollision(color, {col: col+1, row: row-1}, pieces);
 			if(((checkedPosition && checkedPosition.position.col < 8) && checkedPosition.position.row >= 0) && checkedPosition.hit) positions.push(checkedPosition.position);
 	
-			checkedPosition = this.checkCollision(color, {col: col-1, row: row-1}, pieces);
+			checkedPosition = this._checkCollision(color, {col: col-1, row: row-1}, pieces);
 			if(((checkedPosition && checkedPosition.position.col >= 0) && checkedPosition.position.row >= 0) && checkedPosition.hit) positions.push(checkedPosition.position);
 		}
 	
 		return positions;
 	};
 	
-	checkCollision = (color: string, position: IPosition, pieces: Piece[]): IPositionData | null=> {
+	_checkCollision = (color: string, position: IPosition, pieces: Piece[]): IPositionData | null=> {
 		const collision = {
 			hit: false,
 			isEnemy: false,

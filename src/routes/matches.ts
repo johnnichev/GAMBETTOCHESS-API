@@ -9,7 +9,7 @@ matches.post('/', async (request: Request, response: Response): Promise<Response
 		const match = await matchesController.postMatch();
 	    return response.status(200).send(match);
 	} catch(error){
-		return response.status(500).send(error.message);
+		return response.status(error.code).send(error.message);
 	}
 });
 
