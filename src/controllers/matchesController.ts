@@ -1,51 +1,49 @@
-import { Request, Response } from 'express';
+import { HttpError } from '../utils/errors';
 import { getConnection } from 'typeorm';
 import { Match } from '../entities/Match';
 import { Piece } from '../entities/Piece';
 
+export default new class MatchesController {
+	matchesRepository = getConnection().getRepository(Match); 
 
-const matchesRepository = getConnection().getRepository(Match); 
-
-export const getMatch = async (request: Request, response: Response) : Promise<Response> => {
-	const secretKey = request.header('Secret-Key');
-	const matchId = request.params.id;
-
-
-	const findMatch = await matchesRepository.findOne({where: {id: matchId}, relations: ['pieces']});
-
-	if(!findMatch) return response.status(404).send({error: 'match not found'});
-
-	if(secretKey !== findMatch.secret_key) return response.status(422).send({error: 'invalid credentials'});
-
-
-	return response.status(200).send(findMatch);
-};
-
-export const postMatch = async (request: Request, response: Response) : Promise<Response> => {
+postMatch = async () : Promise<Match> => {
 	
 	const match = new Match;
-	const pieces: Piece[] = await createBasePiecesArray();
+	const pieces: Piece[] = await this.createBasePiecesArray();
 	match.pieces = pieces;
 	await match.save();
 
-	const findMatch = await matchesRepository.findOne({where: {id: match.id}, relations: ['pieces']});
-
-	return response.status(200).send(findMatch);
+	const findMatch = await this.matchesRepository.findOne({where: {id: match.id}, relations: ['pieces']});
+	
+	if(!findMatch) throw new HttpError(500, 'please, send this to a developer');
+	
+	return findMatch;
 };
 
-const createBasePiecesArray = async(): Promise<Piece[]> => {
+createBasePiecesArray = async(): Promise<Piece[]> => {
 	let pieces = [];
 	
-	const pawns = await createPawns();
+	const pawns = await this.createPawns();
 	
-	const queensRows = await createQueensRows();
+	const queensRows = await this.createQueensRows();
 	
 	pieces = pieces.concat(pawns, queensRows);
 	
 	return pieces;
 };
 
-const createPiece = async (type: string, color: string, col: number, row: number) : Promise<Piece> => {
+getMatch = async (secretKey: string, matchId: string) : Promise<Match> => {
+
+	const findMatch = await this.matchesRepository.findOne({where: {id: matchId}, relations: ['pieces']});
+
+	if(!findMatch) throw new HttpError(404, 'match id not found');
+
+	if(secretKey !== findMatch.secret_key) throw new HttpError(422, 'invalid credentials');
+
+	return findMatch;
+};
+
+createPiece = async (type: string, color: string, col: number, row: number) : Promise<Piece> => {
 
 	const piece = new Piece;
 	piece.type = type;
@@ -57,32 +55,34 @@ const createPiece = async (type: string, color: string, col: number, row: number
 	return savePiece;
 };
 
-const createPawns = async () : Promise<Piece[]> => {
+createPawns = async () : Promise<Piece[]> => {
 	const pieces = [];
 
 	for(let i = 0; i < 16; i++){
 		if(i < 8){
-			pieces.push(await createPiece('pawn', 'white', i, 1));
+			pieces.push(await this.createPiece('pawn', 'white', i, 1));
 		} else{
-			pieces.push(await createPiece('pawn', 'black', i-8, 6));
+			pieces.push(await this.createPiece('pawn', 'black', i-8, 6));
 		}
 	}
 	
 	return pieces;
 };
 
-const createQueensRows = async () : Promise<Piece[]> => {
+createQueensRows = async () : Promise<Piece[]> => {
 	const pieces = [];
 
 	const piecesTypes = ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'];
 
 	await Promise.all(piecesTypes.map(async (element, index) => {
-		pieces.push(await createPiece(element, 'white', index, 0));
+		pieces.push(await this.createPiece(element, 'white', index, 0));
 	}));
 
 	await Promise.all(piecesTypes.map(async (element, index) => {
-		pieces.push(await createPiece(element, 'black', index, 7));
+		pieces.push(await this.createPiece(element, 'black', index, 7));
 	}));
 	
 	return pieces;
+};
+
 };
