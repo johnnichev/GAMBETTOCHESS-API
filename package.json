@@ -4,7 +4,7 @@
     "dev": "ts-node-dev -r tsconfig-paths/register --respawn --ignore-watch node_modules src/app.ts",
     "start": "node ./build/src/app.js",
     "build": "rimraf ./build && tsc",
-    "postinstall": "tsc", 
+    "postinstall": "tsc",
     "typeorm:cli": "ts-node ./node_modules/typeorm/cli -f ./src/ormconfig.ts"
   },
   "devDependencies": {
@@ -39,6 +39,7 @@
     "joi": "^17.3.0",
     "pg": "^8.5.1",
     "postgres": "^1.0.2",
+    "readme-md-generator": "^1.0.0",
     "reflect-metadata": "^0.1.13",
     "string-strip-html": "^6.3.0",
     "ts-custom-error": "^3.2.0",

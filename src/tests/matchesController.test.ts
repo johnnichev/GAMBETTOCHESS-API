@@ -10,7 +10,8 @@ describe('CREATE Match', async () => {
 	test('should return a piece', async () => {
 		// Arrange
 
-		const piece = await matchesController.createPiece(2, 1, 'a', 'b');
+
+		// to implement soon
 
 		// Act
         
