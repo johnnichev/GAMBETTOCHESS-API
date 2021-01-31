@@ -1,4 +1,4 @@
-# Welcome to GAMBETTO-CHESS-API 👋
+# Welcome to GAMBETTOCHESS-API
 ![Version](https://img.shields.io/badge/version-1.0-blue.svg?cacheSeconds=2592000)
 ![Prerequisite](https://img.shields.io/badge/node-%3E%3D12.18.4-blue.svg)
 [![Documentation](https://img.shields.io/badge/documentation-yes-brightgreen.svg)](https://www.notion.so/GAMBETO-CHESS-DOC-2fb1f057a2fd4887a0ec2b01300a356c)
