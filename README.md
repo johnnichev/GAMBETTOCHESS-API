@@ -26,11 +26,8 @@ yarn run dev
 
 ## Author
 
-👤 **Nicherus (Joao Niche)**
-
-* Twitter: [@joaonicherus](https://twitter.com/joaonicherus)
-* Github: [@Nicherus](https://github.com/Nicherus)
-* LinkedIn: [@joaoniche](https://linkedin.com/in/joaoniche)
+👤 **John Niche**
+* LinkedIn: [@johnniche](https://linkedin.com/in/johnniche)
 
 ## Show your support
 
